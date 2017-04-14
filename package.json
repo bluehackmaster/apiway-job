@@ -1,0 +1,27 @@
+{
+  "name": "tower-tc-runner",
+  "version": "0.0.1",
+  "description": "Test case runner for apiway.io",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.13.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ApiWay/tower-tc-runner.git"
+  },
+  "keywords": [
+    "mocha",
+    "mochajs",
+    "apiway"
+  ],
+  "author": "bluehackmaster",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ApiWay/tower-tc-runner/issues"
+  },
+  "homepage": "https://github.com/ApiWay/tower-tc-runner#readme"
+}
