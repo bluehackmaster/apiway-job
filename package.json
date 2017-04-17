@@ -2,12 +2,17 @@
   "name": "tower-tc-runner",
   "version": "0.0.1",
   "description": "Test case runner for apiway.io",
-  "main": "server.js",
+  "main": "app.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node ./bin/www"
   },
   "dependencies": {
-    "express": "^4.13.3"
+    "body-parser": "~1.16.0",
+    "cookie-parser": "~1.4.3",
+    "debug": "~2.6.0",
+    "morgan": "~1.7.0",
+    "jade": "~1.11.0",
+    "express": "~4.14.1"
   },
   "repository": {
     "type": "git",
