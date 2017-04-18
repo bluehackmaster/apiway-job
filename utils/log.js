@@ -16,7 +16,7 @@ var SVGS = {
     failing: fs.readFileSync(`${__dirname}/../html/failing.svg`, 'utf8'),
 }
 
-var s3 = new AWS.S3()
+var s3 = new AWS.S3({signatureVersion: 'v4'})
 
 exports.logIfErr = function(err) {
     if (err) exports.error(err.stack || err)

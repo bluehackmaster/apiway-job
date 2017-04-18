@@ -9,6 +9,11 @@ exports.FUNCTION_BUILDNUM = process.env.AWS_LAMBDA_FUNCTION_VERSION;
 exports.FUNCTION_NAME = process.env.AWS_LAMBDA_FUNCTION_NAME;
 exports.REPO = process.env.repo;
 
+process.env.AWS_ACCESS_KEY_ID = env.secretEnv.AWS_ACCESS_KEY_ID
+process.env.AWS_SECRET_ACCESS_KEY = env.secretEnv.AWS_SECRET_ACCESS_KEY
+process.env.AWS_REGION = env.secretEnv.AWS_REGION
+
+
 exports.BASE_DIR = '/tmp/apiway'
 exports.HOME_DIR = path.join(exports.BASE_DIR, 'home') // eg: /tmp/apiway/home
 exports.BASE_BUILD_DIR = path.join(exports.HOME_DIR, 'build') // eg: /tmp/apiway/build
