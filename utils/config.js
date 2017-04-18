@@ -1,5 +1,6 @@
 var path = require('path')
 var fs = require('fs')
+var env = require('./env')
 var execSync = require('child_process').execSync
 var utils = require('.')
 
@@ -10,14 +11,14 @@ exports.REPO = process.env.repo;
 
 exports.BASE_DIR = '/tmp/apiway'
 exports.HOME_DIR = path.join(exports.BASE_DIR, 'home') // eg: /tmp/apiway/home
-exports.BASE_BUILD_DIR = path.join(exports.BASE_DIR, 'build') // eg: /tmp/apiway/build
+exports.BASE_BUILD_DIR = path.join(exports.HOME_DIR, 'build') // eg: /tmp/apiway/build
 
 exports.DEFAULT_CONFIG = {
     cmd: 'npm install && npm test',
     env: {
     },
     secretEnv: {
-        GITHUB_TOKEN: '707cbdbf8727ecdc140177a9945b7ea4905f1006',
+        GITHUB_TOKEN: env.secretEnv.GITHUB_TOKEN,
         SLACK_TOKEN: ''
     },
     s3Bucket: 'apiway-log',

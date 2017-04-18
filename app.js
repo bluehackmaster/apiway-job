@@ -4,6 +4,7 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
+var env = require('./utils/env');
 var runs = require('./routes/runs');
 
 var app = express();
@@ -19,6 +20,8 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+// set the secret key variable for jwt
+app.set('jwt-secret', env.secret)
 
 app.use('/runs', runs);
 

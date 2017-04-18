@@ -1,8 +1,8 @@
 var express = require('express');
+var jwt = require('jsonwebtoken');
 var spawn = require('child_process').spawn
 var async = require('async')
-var config = require('../../utils/config')
-var BuildInfo = require('./build').BuildInfo
+var build = require('./build')
 var router = express.Router();
 
 /* GET runs listing. */
@@ -14,11 +14,12 @@ router.get('/', function(req, res, next) {
 router.post('/', function(req, res, next) {
     console.log(req.body);
 
-    var build = new BuildInfo(req.body)
-    build.config = config.initConfig(req.body, build)
-    config.initSync(build.config);
-    res.status(200).json(req.body);
+    build.runBuild(req.body, function(error) {
+        console.error(error);
+    });
 
+
+    res.status(200).json(req.body);
 
 
 });
