@@ -7,13 +7,33 @@ var log = require('../../utils/log')
 var config = require('../../utils/config')
 var env = require('../../utils/env')
 var github = require('../../sources/github')
+var ApiWay = require('apiway.js')
 var spawn = require('child_process').spawn
 
 exports.runBuild = function(buildData, cb) {
-    var info = new BuildInfo(buildData);
-    info.config = config.initConfig(buildData, info)
-    config.initSync(info.config);
-    cloneAndBuild(info, cb)
+    addInstance(buildData, cb)
+    // cloneAndBuild(info, cb)
+}
+
+function addInstance (buildData, cb) {
+  let apiway = new ApiWay({});
+  let instance = apiway.getInstance();
+  let data = {
+    projectId: buildData.projectId
+  };
+
+  instance.addInstance(data)
+    .then(response => {
+      console.log(response.data)
+      var info = new BuildInfo(buildData);
+      info.config = config.initConfig(buildData, info)
+      config.initSync(info.config);
+      cb(0, response.data)
+      cloneAndBuild(info)
+    }).catch((err) => {
+      console.log(err)
+      cb(err, response.data)
+  })
 }
 
 function BuildInfo(buildData) {

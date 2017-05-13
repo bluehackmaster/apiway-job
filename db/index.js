@@ -1,24 +1,29 @@
 var https = require('https')
 var zlib = require('zlib')
 var crypto = require('crypto')
+var mongoose = require('mongoose');
 var AWS = require('aws-sdk')
 var utils = require('../utils')
 var config = require('../utils/config')
 var log = require('../utils/log')
 
-var CONFIG_TABLE = `${config.STACK}-config`
-var BUILDS_TABLE = `${config.STACK}-builds`
+function connectDB() {
+    monoose.connect('mongodb://' + config.db.URL + '/' + config.db.DB);
+    console.log("url = " + MONGODB_URL);
+    client = mongoose.connection;
 
-// https://github.com/aws/aws-sdk-js/issues/862
-var rawClient = new AWS.DynamoDB({
-    httpOptions: {
-        agent: new https.Agent({
-            secureProtocol: 'TLSv1_method',
-            ciphers: 'ALL',
-        }),
-    },
-})
-var client = new AWS.DynamoDB.DocumentClient({service: rawClient})
+    db.on('error', function (err) {
+        console.error.bind(console, 'connection error:');
+        response.status = RESP.FAIL;
+        response.message = "DB connection error";
+        resp_cb(null, response);
+    });
+
+    db.once('open', function callback () {
+        cb();
+    });
+
+}
 
 exports.updateGlobalConfig = function(config, cb) {
     var table = CONFIG_TABLE
@@ -116,20 +121,20 @@ exports.initBuild = function(build, cb) {
 }
 
 exports.finishBuild = function(build, cb) {
-    var table = BUILDS_TABLE
-    client.update({
-        TableName: table,
-        Key: {project: build.project, buildNum: build.buildNum},
-        UpdateExpression: 'SET endedAt = :endedAt, #status = :status',
-        ExpressionAttributeNames: {'#status': 'status'},
-        ExpressionAttributeValues: {
-            ':endedAt': build.endedAt.toISOString(),
-            ':status': build.status,
-        },
-    }, function(err) {
-        if (err) return cb(friendlyErr(table, err))
-        cb()
-    })
+    // var table = BUILDS_TABLE
+    // client.update({
+    //     TableName: table,
+    //     Key: {project: build.project, buildNum: build.buildNum},
+    //     UpdateExpression: 'SET endedAt = :endedAt, #status = :status',
+    //     ExpressionAttributeNames: {'#status': 'status'},
+    //     ExpressionAttributeValues: {
+    //         ':endedAt': build.endedAt.toISOString(),
+    //         ':status': build.status,
+    //     },
+    // }, function(err) {
+    //     if (err) return cb(friendlyErr(table, err))
+    //     cb()
+    // })
 }
 
 exports.checkIfRetry = function(build, cb) {

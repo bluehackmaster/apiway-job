@@ -4,6 +4,9 @@ var spawn = require('child_process').spawn
 var async = require('async')
 var build = require('./build')
 var router = express.Router();
+var Response = require('../../utils/response');
+var RESP = require('../../utils/response_values');
+var response = new Response();
 
 /* GET runs listing. */
 router.get('/', function(req, res, next) {
@@ -13,16 +16,13 @@ router.get('/', function(req, res, next) {
 /* POST runs listing. */
 router.post('/', function(req, res, next) {
     console.log(req.body);
-
-    build.runBuild(req.body, function(error) {
-        console.error(error);
+    build.runBuild(req.body, (err, data) => {
+      if (err) {
+        response.responseMessage = err
+        res.json(response);
+      }
+      res.json(data);
     });
-
-
-    res.status(200).json(req.body);
-
-
 });
-
 
 module.exports = router;
