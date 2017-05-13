@@ -11,6 +11,7 @@ var ApiWay = require('apiway.js')
 var spawn = require('child_process').spawn
 
 exports.runBuild = function(buildData, cb) {
+    console.log('runBuild')
     addInstance(buildData, cb)
     // cloneAndBuild(info, cb)
 }
@@ -19,9 +20,13 @@ function addInstance (buildData, cb) {
   let apiway = new ApiWay({});
   let instance = apiway.getInstance();
   let data = {
-    projectId: buildData.projectId
+    projectId: buildData.projectId,
+    git_user_id: "ApiWay",
+    git_branch : "master",
+    git_repo_id: "Kiosk-API-test"
   };
 
+  console.log(data)
   instance.addInstance(data)
     .then(response => {
       console.log(response.data)
