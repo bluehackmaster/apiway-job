@@ -1,7 +1,7 @@
 ![logo](https://github.com/ApiWay/apiway-design/blob/master/img/logo.png)
 
 # ApiWay: Job
-Dockerized TC(Test Case) project running system.
+Dockerized TC(Test Case) running system.
 
 ## Hot it works
 1. Docker run from [Dockerfile](https://github.com/apiway/apiway-job/blob/master/Dockerfile)
