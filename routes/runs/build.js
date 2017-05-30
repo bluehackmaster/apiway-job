@@ -259,7 +259,7 @@ function lambdaBuild(build, cb) {
     var child_process = require('child_process');
     // console.log(child_process.execSync('find /usr -name npm -type f', {encoding: 'utf-8'}));
 
-    var cmds = ['npm install 1>/dev/null', "./node_modules/mocha/bin/mocha test"];
+    var cmds = ['npm install 1>/dev/null', "mocha test --reporter mochawesome"];
     var runCmd = (cmd, cb) => runInBash(cmd, opts, cb)
 
     async.forEachSeries(cmds, runCmd, cb)
