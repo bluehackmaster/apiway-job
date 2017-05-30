@@ -1,6 +1,9 @@
 var path = require('path')
 var EventEmitter = require('events')
 var async = require('async')
+var moment = require('moment')
+var CLI         = require('clui');
+var Spinner     = CLI.Spinner;
 var db = require('../../db')
 var utils = require('../../utils')
 var log = require('../../utils/log')
@@ -9,24 +12,26 @@ var env = require('../../utils/env')
 var github = require('../../sources/github')
 var ApiWay = require('apiway.js')
 var spawn = require('child_process').spawn
+let apiway = new ApiWay({});
+let instance = apiway.getInstance();
 
 exports.runBuild = function(cb) {
-    console.log('runBuild')
+    // console.log('runBuild')
     run(cb)
 }
 
 function run(cb) {
-  let apiway = new ApiWay({});
-  let instance = apiway.getInstance();
-  console.log(process.env)
-  let instanceId = process.env.instanceId || '5923d13ceac96a0010653dd6'
+  // console.log(process.env)
+  let instanceId = process.env.instanceId || '592d43292c32e2000fe16fc2'
+  // let instanceId = '592d43292c32e2000fe16fc2'
   instance.getInstance(instanceId)
     .then(response => {
-      console.log(response.data)
-      let buildData = response.data.data
+      // console.log(response.data)
+      let buildData = {}
+      buildData.instance = response.data.data
       var info = new BuildInfo(buildData);
       info.config = config.initConfig(buildData, info)
-      console.log(info.config)
+      // console.log(info.config)
       config.initSync(info.config);
       cb(0, response.data)
       cloneAndBuild(info)
@@ -37,16 +42,17 @@ function run(cb) {
 }
 
 function BuildInfo(buildData) {
-    this.startedAt = new Date()
+  // console.log(buildData)
+    this.startedAt = moment().format()
     this.endedAt = null
     this.status = 'pending'
     this.statusEmitter = new EventEmitter()
 
     // Any async functions to run on 'finish' should be added to this array,
     // and be of the form: function(build, cb)
-    this.statusEmitter.finishTasks = []
-    this.project = config.FUNCTION_NAME;
-    this.buildNum = config.FUNCTION_BUILDNUM || 0;
+    this.statusEmitter.finishTasks = [updateInstance]
+    this.project = buildData.instance.project.full_name
+    this.buildNum = buildData.instance._id
     this.repo = buildData.repo || 'Undefined repository';
 
     if (buildData.trigger) {
@@ -67,8 +73,8 @@ function BuildInfo(buildData) {
     this.isRebuild = buildData.isRebuild
 
     this.branch = buildData.git_branch || 'master'
-    this.cloneRepo = buildData.project.name
-    this.cloneUser = buildData.project.full_name.split('/')[0]
+    this.cloneRepo = buildData.instance.project.name
+    this.cloneUser = buildData.instance.project.full_name.split('/')[0]
     this.checkoutBranch = buildData.checkoutBranch || this.branch
     this.commit = buildData.commit
     this.baseCommit = buildData.baseCommit
@@ -98,7 +104,7 @@ function cloneAndBuild(build, cb) {
     clone(build, function(err) {
         if (err) return cb(err)
 
-        console.log(build);
+        // console.log(build);
         // Now that we've cloned the repository we can check for config files
         build.config = config.prepareBuildConfig(build)
 
@@ -138,7 +144,7 @@ function cloneAndBuild(build, cb) {
             // TODO: must be a better place to put this?
             build.config.env.LAMBCI_BUILD_NUM = build.buildNum
 
-            console.log("before lambdaBuild");
+            // console.log("before lambdaBuild");
             if (build.config.docker) {
                 //dockerBuild(build, done)
             } else {
@@ -156,8 +162,8 @@ function buildDone(build, cb) {
     log.info(build.error ? `Build #${build.buildNum} failed: ${build.error.message}` :
         `Build #${build.buildNum} successful!`)
 
-    build.endedAt = new Date()
-    build.status = build.error ? 'failure' : 'success'
+    build.endedAt = moment().format()
+    build.status = build.error ? 'FAIL' : 'PASS'
     build.statusEmitter.emit('finish', build)
 
     var finishTasks = build.statusEmitter.finishTasks.concat(db.finishBuild)
@@ -168,8 +174,24 @@ function buildDone(build, cb) {
     })
 }
 
+function updateInstance (build) {
+  // console.log(build)
+  let data = {
+    endTime: moment().unix(),
+    status: build.status,
+    logUrl: build.logUrl,
+    reportUrl: 'TBD'
+  }
+  instance.updateInstance(build.config.instance._id, data)
+    .then(response => {
+      // console.log(response.data)
+    }).catch((err) => {
+      console.log(err)
+  })
+}
+
 function clone(build, cb) {
-    console.log("clone");
+    // console.log("clone");
 
     // Just double check we're in tmp!
     if (build.cloneDir.indexOf(config.BASE_BUILD_DIR) !== 0) {
@@ -205,7 +227,7 @@ function clone(build, cb) {
     // var runCmd = (cmd, cb) => runInBash(cmd, {env: env, logCmd: maskCmd(cmd)}, cb)
     var runCmd = (cmd, cb) => runInBash(cmd, {logCmd: maskCmd(cmd)}, cb)
 
-    console.log(cmds.length);
+    // console.log(cmds.length);
 
     async.forEachSeries(cmds, runCmd, cb)
 }
@@ -225,10 +247,10 @@ function patchUncaughtHandlers(build, cb) {
 
 function lambdaBuild(build, cb) {
 
-    console.log("lambdaBuild");
+    // console.log("lambdaBuild");
     // build.config = prepareLambdaConfig(build.config)
 
-    console.log('cloneDir = ' + build.cloneDir);
+    // console.log('cloneDir = ' + build.cloneDir);
     var opts = {
         cwd: build.cloneDir,
         // env: config.resolveEnv(build.config),
@@ -237,7 +259,7 @@ function lambdaBuild(build, cb) {
     var child_process = require('child_process');
     // console.log(child_process.execSync('find /usr -name npm -type f', {encoding: 'utf-8'}));
 
-    var cmds = ['npm install -d', "./node_modules/mocha/bin/mocha test"];
+    var cmds = ['npm install 1>/dev/null', "./node_modules/mocha/bin/mocha test"];
     var runCmd = (cmd, cb) => runInBash(cmd, opts, cb)
 
     async.forEachSeries(cmds, runCmd, cb)
@@ -258,30 +280,30 @@ function runInBash(cmd, opts, cb) {
      delete proc.socket._readableState.encoding
      }
      */
-    console.log("runInBash");
+    var status = new Spinner(`${cmd} ...`);
+    status.start();
     var logCmd = opts.logCmd || cmd
     delete opts.logCmd
 
-    console.log('bok--------1 ' + logCmd);
     log.info(`$ ${logCmd}`)
     var proc = spawn('/bin/bash', ['-c', cmd ], opts)
     proc.stdout.pipe(utils.lineStream(log.info))
     proc.stderr.pipe(utils.lineStream(log.error))
     // proc.on('error', cb)
     proc.on('error', function (err) {
-        console.log(err)
-        cb(err);
+      console.log(err)
+      status.stop()
+      cb(err);
     });
 
     proc.on('close', function(code) {
-        var err
-        console.log("bok 1");
-        if (code) {
-            console.log("bok 2: code = " + code);
-            err = new Error(`Command "${logCmd}" failed with code ${code}`)
-            err.code = code
-            err.logTail = log.getTail()
-        }
-        cb(err)
+      var err
+      if (code) {
+          err = new Error(`Command "${logCmd}" failed with code ${code}`)
+          err.code = code
+          err.logTail = log.getTail()
+      }
+      status.stop()
+      cb(err)
     })
 }

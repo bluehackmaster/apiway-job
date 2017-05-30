@@ -84,7 +84,7 @@ function render(params) {
           <i class="fa fa-cloud-upload"></i><a href="https://github.com/${build.user}">${build.user}</a>
         </td>
         <td title="Build start date/time">
-          <i class="fa fa-calendar-o"></i><span id="startedAt" title="${build.startedAt.toISOString()}">${build.startedAt.toISOString()}</span>
+          <i class="fa fa-calendar-o"></i><span id="startedAt" title="${build.startedAt}">${build.startedAt}</span>
         </td>
       </tr>
       <tr>

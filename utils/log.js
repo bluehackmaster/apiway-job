@@ -75,7 +75,8 @@ exports.initBuildLog = function(build) {
     build.buildDirUrl = exports.buildDirUrl(build, config.s3Bucket)
 
     var filename = 'index'
-    var buildDir = `${build.project}/builds/${build.buildNum}`
+    var buildDir = `${build.project}/instances`
+    var filename = `${build.buildNum}`
 
     var branchFilename = 'index'
     var branchStatusFilename = 'status'
@@ -83,14 +84,14 @@ exports.initBuildLog = function(build) {
 
     var makeS3Public = !build.isPrivate
 
-    if (config.s3PublicSecretNames) {
-        filename = crypto.randomBytes(16).toString('hex')
-        if (build.eventType == 'push') {
-            branchFilename = crypto.createHash('md5').update(`${build.token}/${branchDir}/html`).digest('hex')
-            branchStatusFilename = crypto.createHash('md5').update(`${build.token}/${branchDir}/svg`).digest('hex')
-        }
-        makeS3Public = true
-    }
+    // if (config.s3PublicSecretNames) {
+    //     filename = crypto.randomBytes(16).toString('hex')
+    //     if (build.eventType == 'push') {
+    //         branchFilename = crypto.createHash('md5').update(`${build.token}/${branchDir}/html`).digest('hex')
+    //         branchStatusFilename = crypto.createHash('md5').update(`${build.token}/${branchDir}/svg`).digest('hex')
+    //     }
+    //     makeS3Public = true
+    // }
 
     var buildKey = `${buildDir}/${filename}.html`
     var branchKey = `${branchDir}/${branchFilename}.html`
@@ -127,10 +128,10 @@ exports.initBuildLog = function(build) {
 }
 
 exports.lambdaLogUrl = function(build) {
-    return `https://console.aws.amazon.com/cloudwatch/home?region=${process.env.AWS_REGION}#logEvent:` +
-        `group=${encodeURIComponent(build.logGroupName)};` +
-        `stream=${encodeURIComponent(build.logStreamName)};` +
-        `start=${encodeURIComponent(build.startedAt.toISOString().slice(0, 19))}Z`
+    // return `https://console.aws.amazon.com/cloudwatch/home?region=${process.env.AWS_REGION}#logEvent:` +
+    //     `group=${encodeURIComponent(build.logGroupName)};` +
+    //     `stream=${encodeURIComponent(build.logStreamName)};` +
+    //     `start=${encodeURIComponent(build.startedAt.toISOString().slice(0, 19))}Z`
 }
 
 exports.buildDirUrl = function(build, bucket) {
