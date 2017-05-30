@@ -10,28 +10,23 @@ var github = require('../../sources/github')
 var ApiWay = require('apiway.js')
 var spawn = require('child_process').spawn
 
-exports.runBuild = function(buildData, cb) {
+exports.runBuild = function(cb) {
     console.log('runBuild')
-    addInstance(buildData, cb)
-    // cloneAndBuild(info, cb)
+    run(cb)
 }
 
-function addInstance (buildData, cb) {
+function run(cb) {
   let apiway = new ApiWay({});
   let instance = apiway.getInstance();
-  let data = {
-    projectId: buildData.projectId,
-    git_user_id: "ApiWay",
-    git_branch : "master",
-    git_repo_id: "Kiosk-API-test"
-  };
-
-  console.log(data)
-  instance.addInstance(data)
+  console.log(process.env)
+  let instanceId = process.env.instanceId || '5923d13ceac96a0010653dd6'
+  instance.getInstance(instanceId)
     .then(response => {
       console.log(response.data)
+      let buildData = response.data.data
       var info = new BuildInfo(buildData);
       info.config = config.initConfig(buildData, info)
+      console.log(info.config)
       config.initSync(info.config);
       cb(0, response.data)
       cloneAndBuild(info)
@@ -44,17 +39,14 @@ function addInstance (buildData, cb) {
 function BuildInfo(buildData) {
     this.startedAt = new Date()
     this.endedAt = null
-
     this.status = 'pending'
     this.statusEmitter = new EventEmitter()
 
     // Any async functions to run on 'finish' should be added to this array,
     // and be of the form: function(build, cb)
     this.statusEmitter.finishTasks = []
-
     this.project = config.FUNCTION_NAME;
     this.buildNum = config.FUNCTION_BUILDNUM || 0;
-
     this.repo = buildData.repo || 'Undefined repository';
 
     if (buildData.trigger) {
@@ -75,8 +67,8 @@ function BuildInfo(buildData) {
     this.isRebuild = buildData.isRebuild
 
     this.branch = buildData.git_branch || 'master'
-    this.cloneRepo = buildData.git_repo_id
-    this.cloneUser = buildData.git_user_id
+    this.cloneRepo = buildData.project.name
+    this.cloneUser = buildData.project.full_name.split('/')[0]
     this.checkoutBranch = buildData.checkoutBranch || this.branch
     this.commit = buildData.commit
     this.baseCommit = buildData.baseCommit

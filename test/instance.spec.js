@@ -7,7 +7,7 @@ describe('Instance', function() {
    let instance;
    let projectId = '59173df991c95c06396593e6';
    let data;
-   let owner = '591282603f4e5bc0b7c454c2'
+   let owner = '59172d9391c95c0639656c69'
 
    before(function() {
       apiway = new ApiWay({
