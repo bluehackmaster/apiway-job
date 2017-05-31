@@ -33,7 +33,7 @@ exports.init = function() {
 
 exports.info = function() {
     LOG_BUFFER.push(util.format.apply(util, arguments))
-    console.log.apply(console, arguments) // eslint-disable-line no-console
+    // console.log.apply(console, arguments) // eslint-disable-line no-console
 }
 
 exports.error = function() {
@@ -75,8 +75,8 @@ exports.initBuildLog = function(build) {
     build.buildDirUrl = exports.buildDirUrl(build, config.s3Bucket)
 
     var filename = 'index'
-    var buildDir = `${build.project}/instances`
-    var filename = `${build.buildNum}`
+    var buildDir = `${build.project}/${build.buildNum}`
+    var filename = `log`
 
     var branchFilename = 'index'
     var branchStatusFilename = 'status'
@@ -189,5 +189,4 @@ function updateS3Branch(build, bucket, key, branchKey, branchStatusKey, makePubl
         },
     ], cb)
 }
-
 

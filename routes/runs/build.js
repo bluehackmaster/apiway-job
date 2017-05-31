@@ -1,12 +1,14 @@
 var path = require('path')
 var EventEmitter = require('events')
 var async = require('async')
+var fs = require('fs')
 var moment = require('moment')
 var CLI         = require('clui');
 var Spinner     = CLI.Spinner;
 var db = require('../../db')
 var utils = require('../../utils')
 var log = require('../../utils/log')
+var report = require('../../utils/report')
 var config = require('../../utils/config')
 var env = require('../../utils/env')
 var github = require('../../sources/github')
@@ -23,7 +25,7 @@ exports.runBuild = function(cb) {
 function run(cb) {
   // console.log(process.env)
   let instanceId = process.env.instanceId || '592d43292c32e2000fe16fc2'
-  // let instanceId = '592d43292c32e2000fe16fc2'
+  // let instanceId = '592e24835688220010efdc9e'
   instance.getInstance(instanceId)
     .then(response => {
       // console.log(response.data)
@@ -50,7 +52,7 @@ function BuildInfo(buildData) {
 
     // Any async functions to run on 'finish' should be added to this array,
     // and be of the form: function(build, cb)
-    this.statusEmitter.finishTasks = [updateInstance]
+    this.statusEmitter.finishTasks = [uploadReport]
     this.project = buildData.instance.project.full_name
     this.buildNum = buildData.instance._id
     this.repo = buildData.repo || 'Undefined repository';
@@ -174,13 +176,50 @@ function buildDone(build, cb) {
     })
 }
 
+function uploadReport (build) {
+  let mochawesomeDir = `${build.cloneDir}/mochawesome-report`
+  let assetDir = `${mochawesomeDir}/assets`
+  let reportName = `mochawesome`
+  let key = `${build.project}/${build.buildNum}`
+  let keyJson = `${key}/report.json`
+  let keyHtml = `${key}/report.html`
+  let s3Url = `https://${build.config.s3Bucket}.s3.amazonaws.com`
+
+  async.parallel([
+    function a (cb) {
+      report.syncDirS3(build.config.s3Bucket, key + '/assets', assetDir)
+      cb()
+    },
+    function b (cb) {
+      report.uploadS3(build.config.s3Bucket, keyJson, `${mochawesomeDir}/${reportName}.json`)
+      cb()
+    },
+    function c (cb) {
+      report.uploadS3(build.config.s3Bucket, keyHtml, `${mochawesomeDir}/${reportName}.html`)
+      cb()
+    }],
+    function (err,results) {
+      // console.log('uploadReport done')
+      if(err) {
+        console.log(err);
+      } else {
+        build.reportJson = `${s3Url}/${keyJson}`
+        build.reportHtml = `${s3Url}/${keyHtml}`
+        updateInstance(build)
+        // console.log(results)
+      }
+    }
+  );
+}
+
 function updateInstance (build) {
   // console.log(build)
   let data = {
     endTime: moment().unix(),
     status: build.status,
     logUrl: build.logUrl,
-    reportUrl: 'TBD'
+    reportJson: build.reportJson,
+    reportHtml: build.reportHtml
   }
   instance.updateInstance(build.config.instance._id, data)
     .then(response => {

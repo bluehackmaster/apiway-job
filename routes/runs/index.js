@@ -15,7 +15,7 @@ router.get('/', function(req, res, next) {
 
 /* POST runs listing. */
 router.post('/', function(req, res, next) {
-    console.log(req.body);
+    // console.log(req.body);
     build.runBuild(req.body, (err, data) => {
       if (err) {
         response.responseMessage = err

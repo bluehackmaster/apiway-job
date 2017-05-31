@@ -91,7 +91,7 @@ exports.initSync = function(config) {
 exports.initConfig = function(configs, build) {
     var allConfigs = [Object.create(null), exports.DEFAULT_CONFIG].concat(configs || []);
     build.config = utils.merge.apply(null, allConfigs);
-    console.log(build.config)
+    // console.log(build.config)
     return build.config;
 }
 
