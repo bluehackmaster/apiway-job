@@ -188,18 +188,27 @@ function uploadReport (build) {
   async.parallel([
     function a (cb) {
       report.syncDirS3(build.config.s3Bucket, key + '/assets', assetDir)
-      cb()
+        .then(() => {
+        console.log('a done')
+          cb()
+        })
     },
     function b (cb) {
       report.uploadS3(build.config.s3Bucket, keyJson, `${mochawesomeDir}/${reportName}.json`)
-      cb()
+        .then(() => {
+          console.log('b done')
+          cb()
+        })
     },
     function c (cb) {
       report.uploadS3(build.config.s3Bucket, keyHtml, `${mochawesomeDir}/${reportName}.html`)
-      cb()
+        .then(() => {
+          console.log('c done')
+          cb()
+        })
     }],
     function (err,results) {
-      // console.log('uploadReport done')
+      console.log('a b c uploadReport done')
       if(err) {
         console.log(err);
       } else {
