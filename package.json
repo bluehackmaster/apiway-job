@@ -1,5 +1,5 @@
 {
-  "name": "tower-tc-runner",
+  "name": "apiway-job",
   "version": "0.0.1",
   "description": "Test case runner for apiway.io",
   "main": "app.js",
@@ -57,7 +57,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ApiWay/tower-tc-runner.git"
+    "url": "git+https://github.com/ApiWay/apiway-job.git"
   },
   "keywords": [
     "mocha",
@@ -67,7 +67,7 @@
   "author": "bluehackmaster",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/ApiWay/tower-tc-runner/issues"
+    "url": "https://github.com/ApiWay/apiway-job/issues"
   },
-  "homepage": "https://github.com/ApiWay/tower-tc-runner#readme"
+  "homepage": "https://github.com/ApiWay/apiway-job#readme"
 }
