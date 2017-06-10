@@ -74,7 +74,7 @@ function BuildInfo(buildData) {
     this.isPrivate = buildData.isPrivate
     this.isRebuild = buildData.isRebuild
 
-    this.branch = buildData.git_branch || 'master'
+    this.branch = buildData.branch || 'master'
     this.cloneRepo = buildData.instance.project.name
     this.cloneUser = buildData.instance.project.full_name.split('/')[0]
     this.checkoutBranch = buildData.checkoutBranch || this.branch
