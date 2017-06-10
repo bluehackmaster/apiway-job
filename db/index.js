@@ -1,6 +1,7 @@
 var https = require('https')
 var zlib = require('zlib')
 var crypto = require('crypto')
+var fs = require('fs');
 var mongoose = require('mongoose');
 var AWS = require('aws-sdk')
 var utils = require('../utils')
@@ -88,6 +89,10 @@ exports.getBuild = function(project, buildNum, cb) {
 }
 
 exports.initBuild = function(build, cb) {
+  var commit = fs.readFileSync(`${build.cloneDir}/commit`, 'utf8');
+  build.commit = commit.replace('\n', '')
+  build.commitUrl = `https://github.com/${build.cloneUser}/${build.cloneRepo}/commit/${build.commit}`
+
     //FIXME: To implement DB logic
     cb(null, build);
     // var table = BUILDS_TABLE

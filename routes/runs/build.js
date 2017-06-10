@@ -24,8 +24,8 @@ exports.runBuild = function(cb) {
 
 function run(cb) {
   // console.log(process.env)
-  let instanceId = process.env.instanceId || '592d43292c32e2000fe16fc2'
-  // let instanceId = '592e24835688220010efdc9e'
+  // let instanceId = process.env.instanceId || '593c039b3270c7000fd7351f'
+  let instanceId = '593c039b3270c7000fd7351f'
   instance.getInstance(instanceId)
     .then(response => {
       // console.log(response.data)
@@ -146,11 +146,11 @@ function cloneAndBuild(build, cb) {
             // TODO: must be a better place to put this?
             build.config.env.LAMBCI_BUILD_NUM = build.buildNum
 
-            // console.log("before lambdaBuild");
+            // console.log("before podBuild");
             if (build.config.docker) {
                 //dockerBuild(build, done)
             } else {
-                lambdaBuild(build, done)
+                podBuild(build, done)
             }
         })
     })
@@ -227,9 +227,12 @@ function updateInstance (build) {
     endTime: moment().unix(),
     status: build.status,
     logUrl: build.logUrl,
+    commit: build.commit,
+    commitUrl: build.commitUrl,
     reportJson: build.reportJson,
     reportHtml: build.reportHtml
   }
+  console.log(data)
   instance.updateInstance(build.config.instance._id, data)
     .then(response => {
       // console.log(response.data)
@@ -266,9 +269,10 @@ function clone(build, cb) {
             `cd ${build.cloneDir} && git init && git pull ${depth} ${cloneUrl} ${build.checkoutBranch}`,
         ]
     }
+    var saveCommitCmd = `cd ${build.cloneDir} && git rev-parse HEAD > commit`
 
     // No caching of clones for now – can revisit this if we want to – but for now, safer to save space
-    var cmds = [`rm -rf ${config.BASE_BUILD_DIR}`].concat(cloneCmd, checkoutCmd)
+    var cmds = [`rm -rf ${config.BASE_BUILD_DIR}`].concat(cloneCmd, checkoutCmd, saveCommitCmd)
     // var cmds = [`rm -rf ${config.BASE_BUILD_DIR}`].concat(cloneCmd)
 
     // var env = prepareLambdaConfig({}).env
@@ -293,9 +297,9 @@ function patchUncaughtHandlers(build, cb) {
     return done
 }
 
-function lambdaBuild(build, cb) {
+function podBuild(build, cb) {
 
-    // console.log("lambdaBuild");
+    // console.log("podBuild");
     // build.config = prepareLambdaConfig(build.config)
 
     // console.log('cloneDir = ' + build.cloneDir);
