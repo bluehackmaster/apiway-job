@@ -24,8 +24,8 @@ exports.runBuild = function(cb) {
 
 function run(cb) {
   // console.log(process.env)
-  // let instanceId = process.env.instanceId || '593c039b3270c7000fd7351f'
-  let instanceId = '593c039b3270c7000fd7351f'
+  let instanceId = process.env.instanceId || '593c039b3270c7000fd7351f'
+  // let instanceId = '593c039b3270c7000fd7351f'
   instance.getInstance(instanceId)
     .then(response => {
       // console.log(response.data)
