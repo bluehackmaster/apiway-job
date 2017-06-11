@@ -25,7 +25,7 @@ exports.runBuild = function(cb) {
 function run(cb) {
   // console.log(process.env)
   let instanceId = process.env.instanceId || '593c039b3270c7000fd7351f'
-  // let instanceId = '593c039b3270c7000fd7351f'
+  // let instanceId = '593c24e128049b000f1b91b6'
   instance.getInstance(instanceId)
     .then(response => {
       // console.log(response.data)
@@ -184,6 +184,10 @@ function uploadReport (build) {
   let keyJson = `${key}/report.json`
   let keyHtml = `${key}/report.html`
   let s3Url = `https://${build.config.s3Bucket}.s3.amazonaws.com`
+  let testResult = require(`${mochawesomeDir}/${reportName}.json`)
+  if (testResult != null && testResult.stats) {
+    build.tc = testResult.stats
+  }
 
   async.parallel([
     function a (cb) {
@@ -230,7 +234,8 @@ function updateInstance (build) {
     commit: build.commit,
     commitUrl: build.commitUrl,
     reportJson: build.reportJson,
-    reportHtml: build.reportHtml
+    reportHtml: build.reportHtml,
+    tc: build.tc
   }
   console.log(data)
   instance.updateInstance(build.config.instance._id, data)
