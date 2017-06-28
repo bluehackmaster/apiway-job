@@ -11,6 +11,8 @@ COPY package.json /usr/src/app/
 RUN npm install
 RUN npm install mocha mochawesome -g
 
+ENV PATH /usr/src/app/bin:$PATH
+
 COPY . /usr/src/app
 
 EXPOSE 8080

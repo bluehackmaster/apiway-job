@@ -239,10 +239,26 @@ function updateInstance (build) {
   }
   console.log(data)
   instance.updateInstance(build.config.instance._id, data)
-    .then(response => {
-      // console.log(response.data)
+    .then(() => killJob())
+    .then(() => {
+      console.log('updateInstance done')
     }).catch((err) => {
       console.log(err)
+  })
+}
+
+function killJob() {
+  return new Promise((resolve, reject) => {
+    let cmd = `kubectl delete pods -l instanceId=${process.env.instanceId}`
+    runInBash(cmd, (err) => {
+      if (err) {
+        console.log('killJob error : ' + err)
+        reject(err)
+      } else {
+        console.log('killJob done')
+        resolve()
+      }
+    })
   })
 }
 
@@ -282,7 +298,8 @@ function clone(build, cb) {
 
     // var env = prepareLambdaConfig({}).env
     // var runCmd = (cmd, cb) => runInBash(cmd, {env: env, logCmd: maskCmd(cmd)}, cb)
-    var runCmd = (cmd, cb) => runInBash(cmd, {logCmd: maskCmd(cmd)}, cb)
+  // var runCmd = (cmd, cb) => runInBash(cmd, {logCmd: maskCmd(cmd)}, cb)
+    var runCmd = (cmd, cb) => runInBash(cmd, cb)
 
     // console.log(cmds.length);
 
@@ -308,22 +325,22 @@ function podBuild(build, cb) {
     // build.config = prepareLambdaConfig(build.config)
 
     // console.log('cloneDir = ' + build.cloneDir);
-    var opts = {
-        cwd: build.cloneDir,
-        // env: config.resolveEnv(build.config),
-    }
+    // var opts = {
+    //     cwd: build.cloneDir,
+    //     // env: config.resolveEnv(build.config),
+    // }
 
     var child_process = require('child_process');
     // console.log(child_process.execSync('find /usr -name npm -type f', {encoding: 'utf-8'}));
 
     var cmds = ['npm install 1>/dev/null', "mocha test --reporter mochawesome"];
-    var runCmd = (cmd, cb) => runInBash(cmd, opts, cb)
+    var runCmd = (cmd, cb) => runInBash(cmd, cb)
 
     async.forEachSeries(cmds, runCmd, cb)
     // runInBash(build.config.cmd, opts, cb)
 }
 
-function runInBash(cmd, opts, cb) {
+function runInBash(cmd, cb) {
     // Would love to create a pseudo terminal here (pty), but don't have permissions in Lambda
     /*
      var proc = require('pty.js').spawn('/bin/bash', ['-c', config.cmd], {
@@ -339,11 +356,12 @@ function runInBash(cmd, opts, cb) {
      */
     var status = new Spinner(`${cmd} ...`);
     status.start();
-    var logCmd = opts.logCmd || cmd
-    delete opts.logCmd
+    // var logCmd = opts.logCmd || cmd
+    // delete opts.logCmd
 
-    log.info(`$ ${logCmd}`)
-    var proc = spawn('/bin/bash', ['-c', cmd ], opts)
+    // log.info(`$ ${logCmd}`)
+    // var proc = spawn('/bin/bash', ['-c', cmd ], opts)
+    var proc = spawn('/bin/bash', ['-c', cmd ])
     proc.stdout.pipe(utils.lineStream(log.info))
     proc.stderr.pipe(utils.lineStream(log.error))
     // proc.on('error', cb)
@@ -356,7 +374,7 @@ function runInBash(cmd, opts, cb) {
     proc.on('close', function(code) {
       var err
       if (code) {
-          err = new Error(`Command "${logCmd}" failed with code ${code}`)
+          err = new Error(`Command "${cmd}" failed with code ${code}`)
           err.code = code
           err.logTail = log.getTail()
       }
