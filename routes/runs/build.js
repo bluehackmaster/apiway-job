@@ -76,6 +76,7 @@ function BuildInfo(buildData) {
 
     this.branch = buildData.branch || 'master'
     this.cloneRepo = buildData.instance.project.name
+    console.log('full_name = ' + buildData.instance.project)
     this.cloneUser = buildData.instance.project.full_name.split('/')[0]
     this.checkoutBranch = buildData.checkoutBranch || this.branch
     this.commit = buildData.commit
