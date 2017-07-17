@@ -21,7 +21,7 @@ Dockerized TC(Test Case) running system.
 #### SDK
 ##### Javascript
 * [apiway-sdk-js](https://github.com/ApiWay/apiway-sdk-js)
-* [npm: apiway.js](https://www.npmjs.com/package/apiway.js)
+* [npm: apiway-sdk-js](https://www.npmjs.com/package/apiway-sdk-js)
 #### Cloud (Kubernetes)
 * [apiway-cloud-orchestration](https://github.com/ApiWay/apiway-cloud-orchestration)
 #### Design

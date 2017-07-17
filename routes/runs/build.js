@@ -3,8 +3,6 @@ var EventEmitter = require('events')
 var async = require('async')
 var fs = require('fs')
 var moment = require('moment')
-var CLI         = require('clui');
-var Spinner     = CLI.Spinner;
 var db = require('../../db')
 var utils = require('../../utils')
 var log = require('../../utils/log')
@@ -12,7 +10,7 @@ var report = require('../../utils/report')
 var config = require('../../utils/config')
 var env = require('../../utils/env')
 var github = require('../../sources/github')
-var ApiWay = require('apiway.js')
+var ApiWay = require('apiway-sdk-js')
 var spawn = require('child_process').spawn
 let apiway = new ApiWay({});
 let instance = apiway.getInstance();
@@ -24,7 +22,7 @@ exports.runBuild = function(cb) {
 
 function run(cb) {
   // console.log(process.env)
-  let instanceId = process.env.instanceId || '593c039b3270c7000fd7351f'
+  let instanceId = process.env.instanceId || '596cb2e8a5a34e000fb64bd5'
   // let instanceId = '593c24e128049b000f1b91b6'
   instance.getInstance(instanceId)
     .then(response => {
@@ -44,7 +42,7 @@ function run(cb) {
 }
 
 function BuildInfo(buildData) {
-  // console.log(buildData)
+  console.log(buildData)
     this.startedAt = moment().format()
     this.endedAt = null
     this.status = 'pending'
@@ -240,7 +238,7 @@ function updateInstance (build) {
   }
   console.log(data)
   instance.updateInstance(build.config.instance._id, data)
-    .then(() => killJob())
+    .then(() => killJob(build))
     .then(() => {
       console.log('updateInstance done')
     }).catch((err) => {
@@ -248,18 +246,22 @@ function updateInstance (build) {
   })
 }
 
-function killJob() {
+
+function killJob(build) {
   return new Promise((resolve, reject) => {
-    let cmd = `kubectl delete pods -l instanceId=${process.env.instanceId}`
-    runInBash(cmd, (err) => {
-      if (err) {
-        console.log('killJob error : ' + err)
-        reject(err)
-      } else {
-        console.log('killJob done')
-        resolve()
-      }
-    })
+    setTimeout(function(){
+      let cmd = `kubectl delete pods -l instanceId=${process.env.instanceId}`
+      // let cmd = `ls ${build.cloneDir}/mochawesome-report/assets`
+      runInBash(cmd, (err) => {
+        if (err) {
+          console.log('killJob error : ' + err)
+          reject(err)
+        } else {
+          console.log('killJob done')
+          resolve()
+        }
+      })
+    }, 600000);
   })
 }
 
@@ -302,6 +304,7 @@ function clone(build, cb) {
   // var runCmd = (cmd, cb) => runInBash(cmd, {logCmd: maskCmd(cmd)}, cb)
     var runCmd = (cmd, cb) => runInBash(cmd, cb)
 
+  console.log(cmds)
     // console.log(cmds.length);
 
     async.forEachSeries(cmds, runCmd, cb)
@@ -334,7 +337,7 @@ function podBuild(build, cb) {
     var child_process = require('child_process');
     // console.log(child_process.execSync('find /usr -name npm -type f', {encoding: 'utf-8'}));
 
-    var cmds = ['npm install 1>/dev/null', "mocha test --reporter mochawesome"];
+    var cmds = [`cd ${build.cloneDir} && npm install 1>/dev/null`, `cd ${build.cloneDir} && npm run test`];
     var runCmd = (cmd, cb) => runInBash(cmd, cb)
 
     async.forEachSeries(cmds, runCmd, cb)
@@ -342,6 +345,7 @@ function podBuild(build, cb) {
 }
 
 function runInBash(cmd, cb) {
+  console.log('runInBash:' + cmd)
     // Would love to create a pseudo terminal here (pty), but don't have permissions in Lambda
     /*
      var proc = require('pty.js').spawn('/bin/bash', ['-c', config.cmd], {
@@ -355,8 +359,6 @@ function runInBash(cmd, cb) {
      delete proc.socket._readableState.encoding
      }
      */
-    var status = new Spinner(`${cmd} ...`);
-    status.start();
     // var logCmd = opts.logCmd || cmd
     // delete opts.logCmd
 
@@ -368,7 +370,6 @@ function runInBash(cmd, cb) {
     // proc.on('error', cb)
     proc.on('error', function (err) {
       console.log(err)
-      status.stop()
       cb(err);
     });
 
@@ -379,7 +380,6 @@ function runInBash(cmd, cb) {
           err.code = code
           err.logTail = log.getTail()
       }
-      status.stop()
       cb(err)
     })
 }

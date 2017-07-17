@@ -1,6 +1,6 @@
 import expect from 'must';
 
-import ApiWay from 'apiway.js';
+import ApiWay from 'apiway-sdk-js';
 import testUser from './fixtures/user.json';
 import {assertSuccessful, assertArray} from './helpers/callbacks';
 
